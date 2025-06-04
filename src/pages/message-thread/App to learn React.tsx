@@ -1,4 +1,6 @@
 import clsx from 'clsx';
+import { useState } from 'react'
+
 
 type Author = {
   id: number,
@@ -49,11 +51,6 @@ const messages = [
   },
   {
     id: 5,
-    content: "Well...",
-    author: authors[1]
-  },
-  {
-    id: 6,
     content: "You'll see...",
     author: authors[1]
   }
@@ -61,40 +58,53 @@ const messages = [
 
 function App() {
 
+  // if (messages[i-1].author === messages[i].author){sharp top corner, delete name/picture, decrease spacing}
+  // if (messages[i+1].author === messages[i].author){sharp bottom corner, delete name/picture, decrease spacing}
+  // has to work for both sides
+
   return <MessageThread messages={messages} />
 }
 
 function MessageThread({ messages }: { messages: Message[] }) {
+  
   return (
     <div className='flex flex-col border-1 p-5 gap-2'>
-      {messages.map((message, index) => {
-        const isCurrentUser = message.author.id === currentUserID
-        const hasPreviousMessage = index > 0 && messages[index - 1].author.id === message.author.id
-        const hasFollowingMessage = index < messages.length - 1 && messages[index + 1].author.id === message.author.id
-
-        const direction = isCurrentUser ? 'flex-row-reverse' : 'flex-row'
-        const background = isCurrentUser ? 'bg-blue-300' : 'bg-gray-200'
-        const sideJustify = isCurrentUser ? 'justify-items-start' : 'justify-items-end'
-
-        let imageUrl = ''
-        const handlePreviousMessage = hasPreviousMessage ? ((imageUrl = ''), (isCurrentUser ? 'rounded-tl-lg' : 'rounded-tr-lg')) : ((imageUrl = message.author.pfp), 'rounded-t-lg')
-        const handleFollowingMessage = hasFollowingMessage ? (isCurrentUser ? 'rounded-bl-lg' : 'rounded-br-lg') : 'rounded-b-lg'
-
-        return (
-          <div className={clsx('flex justify-start relative', direction)}>
-            <div className={clsx(sideJustify)}>
-              <p className='text-xs font-light absolute text-gray-400 -top-4'>{message.author.name}</p>
-              <img className='h-6 w-6 rounded-full' src={imageUrl}></img>
-            </div>
-            <div className='mx-.5'>
-              <p className={clsx('p-2 mx-2 text-xs max-w-sm', handlePreviousMessage, handleFollowingMessage, background)}>{message.content}</p>
-            </div>
-          </div>
-        )
-      })}
+      {messages.map((message) => <Message messageData={message} />)}
     </div>
   )
 }
 
+// type MessageProps = {
+//   messageData: Message
+// }
+
+function Message({ messageData }: { messageData: Message }) {
+  const isCurrentUser = messageData.author.id === currentUserID
+  const hasPreviousMessage = messageData.id - 1 === messageData.id
+  const hasFollowingMessage = messageData.id + 1 === messageData.id
+  console.log(messageData.id - 1, messageData.id)
+
+  const direction = isCurrentUser ? 'flex-row-reverse' : 'flex-row'
+  const background = isCurrentUser ? 'bg-blue-300' : 'bg-gray-200'
+  const sideJustify = isCurrentUser ? 'justify-items-start' : 'justify-items-end'
+
+  const topSharpCorner = isCurrentUser ? 'rounded-tl-lg' : 'rounded-tr-lg'
+  const topCorners = hasPreviousMessage ? topSharpCorner : 'rounded-t-lg'
+
+  const bottomSharpCorner = isCurrentUser ? 'rounded-bl-lg' : 'rounded-br-lg'
+  const bottomCorners = hasFollowingMessage ? bottomSharpCorner : 'rounded-b-lg'
+
+  return (
+    <div className={clsx('flex justify-start relative', direction)}>
+      <div className={clsx(sideJustify)}>
+        <p className='text-xs font-light absolute text-gray-400 -top-4'>{messageData.author.name}</p>
+        <img className='h-6 w-6 rounded-full' src={messageData.author.pfp}></img>
+      </div>
+      <div className='mx-.5'>
+        <p className={clsx('p-2 mx-2 text-xs max-w-sm', topCorners, bottomCorners, background)}>{messageData.content}</p>
+      </div>
+    </div>
+  )
+}
 
 export default App
